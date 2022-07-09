@@ -18,8 +18,8 @@ from __future__ import print_function
 import logging
 
 import grpc
-from src.pb import helloworld_pb2
-from src.pb import helloworld_pb2_grpc
+from src.protos import helloworld_pb2
+from src.protos import helloworld_pb2_grpc
 from config import CONFIG
 
 LOGGER = logging.getLogger(__name__)

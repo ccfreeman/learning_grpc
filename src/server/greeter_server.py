@@ -17,8 +17,8 @@ from concurrent import futures
 import logging
 
 import grpc
-from src.pb import helloworld_pb2 
-from src.pb import helloworld_pb2_grpc
+from src.protos import helloworld_pb2 
+from src.protos import helloworld_pb2_grpc
 from config import CONFIG
 import logging
 
@@ -31,7 +31,7 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
     def SayHello(self, request, context):
         LOGGER.info("Received request for hello")
         return helloworld_pb2.HelloReply(message='Hello, %s!' % request.name)
-        
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
