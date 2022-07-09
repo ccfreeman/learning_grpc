@@ -27,9 +27,27 @@ LOGGER = logging.getLogger(__name__)
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
 
+    def __init__(self):
+        self.name = None
+
     def SayHello(self, request, context):
         LOGGER.info("Received request for hello")
+        self.name = request.name
         return helloworld_pb2.HelloReply(message='Hello, %s!' % request.name)
+
+    def SayHelloAgain(self, request, context):
+        LOGGER.info("Received request for hello again")
+        if self.name is not None:
+            return helloworld_pb2.HelloReply(message=f"Hello again, {self.name}")
+        return helloworld_pb2.HelloReply(message="Hello again. Do we know each other?")
+
+    def ForgetMe(self, request, context):
+        LOGGER.info("Received request to forget")
+        if self.name is not None:
+            name = self.name
+            self.name = None
+            return helloworld_pb2.HelloReply(message=f"Ok. Forgetting you, {name}")
+        return helloworld_pb2.HelloReply(message="But I don't even know you!")
 
 
 def serve():
@@ -42,4 +60,3 @@ def serve():
 
 if __name__ == '__main__':
     serve()
-    
