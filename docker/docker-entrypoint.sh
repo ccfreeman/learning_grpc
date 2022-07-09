@@ -10,7 +10,10 @@ source ~/.bashrc
 
 pipenv run pip freeze
 
-# start gunicorn
-pipenv run python -m src.server.greeter_server
+# generate the protobuff files to ensure they exist
+pipenv run python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. src/protos/*.proto
+
+# start the server
+pipenv run python -m src.greeter_server
 
 exec sleep infinity
