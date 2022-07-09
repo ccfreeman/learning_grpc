@@ -1,4 +1,8 @@
-# learning_grpc
+# Learning gRPC
+
+Play around with gRPC (based on the examples at [grpc.io](https://grpc.io/docs/languages/python/quickstart/)). We try out a few things:
+1. Running server/client locally.
+2. Running the server through docker-compose.
 
 ## 1. Running Locally
 
