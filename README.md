@@ -38,3 +38,21 @@ python -m src.greeter_server
 Now open a new terminal, activate your pipenv shell, and run the greeter client script.
 ```
 python -m src.greeter_client
+```
+
+## 2. Running the server through Docker
+
+To run a docker-compose build of our server, build and launch a detached container.
+```
+docker-compose up -d --build
+```
+
+Now, compile the `.proto` files if you have not already for the greeter, and execute the greeter script.
+```
+python -m src.greeter_client
+```
+You should see a greeting logged on your terminal out.
+```
+2022-07-09 13:21:14,036 - __main__ - PID 47998 - TID 4302095744 - INFO - run()- Greeter client received: Hello, cole!
+```
+If you check the logs on your docker container, you'll see that a gRPC call was received from your greeter client.
