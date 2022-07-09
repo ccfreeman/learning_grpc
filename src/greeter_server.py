@@ -30,18 +30,24 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
     def __init__(self):
         self.name = None
 
-    def SayHello(self, request, context):
+    def SayHello(
+        self, request: helloworld_pb2.HelloRequest, context: grpc.ServicerContext
+    ) -> helloworld_pb2.HelloReply:
         LOGGER.info("Received request for hello")
         self.name = request.name
         return helloworld_pb2.HelloReply(message='Hello, %s!' % request.name)
 
-    def SayHelloAgain(self, request, context):
+    def SayHelloAgain(
+        self, request: helloworld_pb2.Empty, context: grpc.ServicerContext
+    ) -> helloworld_pb2.HelloReply:
         LOGGER.info("Received request for hello again")
         if self.name is not None:
             return helloworld_pb2.HelloReply(message=f"Hello again, {self.name}")
         return helloworld_pb2.HelloReply(message="Hello again. Do we know each other?")
 
-    def ForgetMe(self, request, context):
+    def ForgetMe(
+        self, request: helloworld_pb2.Empty, context: grpc.ServicerContext
+    ) -> helloworld_pb2.HelloReply:
         LOGGER.info("Received request to forget")
         if self.name is not None:
             name = self.name

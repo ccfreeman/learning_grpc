@@ -15,8 +15,10 @@
 
 from __future__ import print_function
 
+import sys
 import logging
 
+import time
 import grpc
 from src.protos import helloworld_pb2
 from src.protos import helloworld_pb2_grpc
@@ -28,20 +30,32 @@ def run():
     # NOTE(gRPC Python Team): .close() is possible on a channel and should be
     # used in circumstances in which the with statement does not fit the needs
     # of the code.
+
+    if len(sys.argv) == 1:
+        name = 'you'
+    else:
+        name = sys.argv[1]
+
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = helloworld_pb2_grpc.GreeterStub(channel)
-        response = stub.SayHello(helloworld_pb2.HelloRequest(name='cole'))
+        response = stub.SayHello(helloworld_pb2.HelloRequest(name=name))
         LOGGER.info("Greeter client received: " + response.message)
+        time.sleep(1)
 
         response = stub.SayHelloAgain(helloworld_pb2.Empty())
         LOGGER.info("Greeter client received: " + response.message)
+        time.sleep(1)
 
         response = stub.ForgetMe(helloworld_pb2.Empty())
         LOGGER.info("Greeter client received: " + response.message)
+        time.sleep(1)
 
         response = stub.SayHelloAgain(helloworld_pb2.Empty())
         LOGGER.info("Greeter client received: " + response.message)
+        time.sleep(1)
         
 
 if __name__ == '__main__':
-    run()
+    for i in range(10):
+        run()
+        time.sleep(2)
