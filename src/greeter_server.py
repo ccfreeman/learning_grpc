@@ -20,7 +20,6 @@ import grpc
 from src.protos import helloworld_pb2 
 from src.protos import helloworld_pb2_grpc
 from config import CONFIG
-import logging
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,5 +41,4 @@ def serve():
 
 
 if __name__ == '__main__':
-    logging.basicConfig()
     serve()
