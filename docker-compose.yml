@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: janusapi
+    volumes:
+      - ../Coyote.Procurement.AnnualPricing.Janus.Data/data/:/app/data/
+    container_name: janusapi
+    command: [ "/app/docker-entrypoint.sh" ]
+    ports:
+      - 8080:8080
+    environment: 
+      - GUNICORN_WORKERS=4
+      - COYOTE_HOST_TYPE=qa
+      - RUNNING_AS_DOCKER=True
+      - API_LOAD_JANUS=$API_LOAD_JANUS
+      - RUNNING_TEST_ENVIRONMENT=True
+      - AZURITE_HOSTNAME=azurite
+      - DATA_FROM_CLOUD=$DATA_FROM_CLOUD
+      - BACKTEST_DATE=None
+    depends_on:
+      - azurite
+
+  annual-trend-model:
+    image: janusapi
+    command: 
+      - "pipenv"
+      - "run"
+      - "python"
+      - "-m"
+      - "src.workers.annual_trend_worker.main"
+    volumes:
+      - ../Coyote.Procurement.AnnualPricing.Janus.Data/data/:/app/data/
+    environment: 
+      - GUNICORN_WORKERS=4
+      - COYOTE_HOST_TYPE=qa
+      - RUNNING_AS_DOCKER=true
+      - RUNNING_TEST_ENVIRONMENT=true
+      - AZURITE_HOSTNAME=azurite
+      - DATA_FROM_CLOUD=$DATA_FROM_CLOUD
+    depends_on:
+      - app
+      - azurite
+
+  seasonal-model:
+    image: janusapi
+    deploy:
+      replicas: 4
+      resources:
+        limits:
+          cpus: 1
+          memory: 3G
+        reservations:
+          cpus: 1.2
+          memory: 3G
+    command: 
+      - "pipenv"
+      - "run"
+      - "python"
+      - "-m"
+      - "src.workers.seasonality_worker.main"
+    volumes:
+      - ../Coyote.Procurement.AnnualPricing.Janus.Data/data/:/app/data/
+    environment: 
+      - GUNICORN_WORKERS=4
+      - COYOTE_HOST_TYPE=qa
+      - RUNNING_AS_DOCKER=true
+      - RUNNING_TEST_ENVIRONMENT=true
+      - AZURITE_HOSTNAME=azurite
+      - DATA_FROM_CLOUD=$DATA_FROM_CLOUD
+    depends_on:
+      - app
+      - azurite
+
+  current-market-model:
+    image: janusapi
+    command: 
+      - "pipenv"
+      - "run"
+      - "python"
+      - "-m"
+      - "src.workers.current_market_worker.main"
+    volumes:
+      - ../Coyote.Procurement.AnnualPricing.Janus.Data/data/:/app/data/
+    environment: 
+      - GUNICORN_WORKERS=4
+      - COYOTE_HOST_TYPE=qa
+      - RUNNING_AS_DOCKER=true
+      - RUNNING_TEST_ENVIRONMENT=true
+      - AZURITE_HOSTNAME=azurite
+      - DATA_FROM_CLOUD=$DATA_FROM_CLOUD
+    depends_on:
+      - app
+      - azurite
+
+  responder:
+    image: janusapi
+    command: /app/responder-entrypoint.sh
+    environment: 
+      - GUNICORN_WORKERS=4
+      - COYOTE_HOST_TYPE=qa
+      - RUNNING_AS_DOCKER=True
+      - RUNNING_TEST_ENVIRONMENT=True
+      - AZURITE_HOSTNAME=azurite
+    depends_on:
+      - app
+      - azurite
+
+  # worker:
+  #   image: janusapi
+  #   command: /app/worker-entrypoint.sh
+  #   volumes:
+  #     - ../Coyote.Procurement.AnnualPricing.Janus.Data/data/:/app/data/
+  #   environment: 
+  #     - GUNICORN_WORKERS=4
+  #     - COYOTE_HOST_TYPE=qa
+  #     - RUNNING_AS_DOCKER=True
+  #     - RUNNING_TEST_ENVIRONMENT=True
+  #     - AZURITE_HOSTNAME=azurite
+  #     - DATA_FROM_CLOUD=false
+  #   depends_on:
+  #     - app
+  #     - azurite
+
+  ### JOBS
+
+  backtest-analysis:
+    image: janusapi
+    command: 
+      - "pipenv"
+      - "run"
+      - "python"
+      - "-m"
+      - "src.workers.backtest_analysis.main"
+    volumes:
+      - ../Coyote.Procurement.AnnualPricing.Janus.Data/data/:/app/data/
+    environment:
+      - GUNICORN_WORKERS=4
+      - COYOTE_HOST_TYPE=qa
+      - RUNNING_AS_DOCKER=true
+      - RUNNING_TEST_ENVIRONMENT=true
+      - AZURITE_HOSTNAME=azurite
+      - DATA_FROM_CLOUD=$DATA_FROM_CLOUD
+    depends_on:
+      - azurite
+
+  ### DATA HANDLING SERVICES
+  
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: azurite
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --loose"
+    ports:
+    - 10000:10000
+    - 10001:10001
+  
+  # receiver:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile
+  #   container_name: receiver
+  #   image: janusapi
+  #   ports:
+  #     - 5056:5056
+  #   command: "pipenv run uvicorn tests.integration.mock_callback_api:app --host 0.0.0.0 --port 5056"

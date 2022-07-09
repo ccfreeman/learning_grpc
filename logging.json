@@ -1,0 +1,40 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s - %(name)s - PID %(process)d - TID %(thread)d - %(levelname)s - %(funcName)1s()- %(message)s"
+        }
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "stream": "ext://sys.stdout"
+        },
+
+        "file_handler": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "filename": "#{logPath}info.log",
+            "formatter": "simple",
+            "maxBytes": 1048576000,
+            "backupCount": 20,
+            "encoding": "utf8"
+        },
+
+        "memory_handler": {
+            "class": "logging.handlers.MemoryHandler",
+            "formatter": "simple",
+            "capacity": 5,
+            "target": "file_handler"
+        }
+    },
+
+    "root": {
+        "level": "INFO",
+        "handlers": ["console", "memory_handler"]
+    }
+}
