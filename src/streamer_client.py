@@ -40,7 +40,8 @@ async def run():
         LOGGER.info("STREAMING DATA OUT OF CLIENT")
         arr = np.random.randn(n, m)
         df_out = pd.DataFrame(arr, columns=[str(i) for i in range(m)])
-        await stub.StreamDataFrameIn(stream_dataframe_out(df_out))
+        response = await stub.StreamDataFrameIn(stream_dataframe_out(df_out))
+        LOGGER.info(f"Pushed dataframe from client. Message: {response.message}")
         
     LOGGER.info(df_in)
 
