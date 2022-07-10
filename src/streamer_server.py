@@ -1,4 +1,5 @@
-from concurrent import futures
+# from concurrent import futures
+import asyncio
 import logging
 
 import numpy as np
@@ -16,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Streamer(streamer_pb2_grpc.StreamerServicer):
 
-    def StreamDataFrame(
+    async def StreamDataFrame(
         self, request: streamer_pb2.StreamerRequest, context: grpc.ServicerContext
     ) -> streamer_pb2.StreamerResponse:
         LOGGER.info("Received request for stream")
@@ -32,14 +33,17 @@ class Streamer(streamer_pb2_grpc.StreamerServicer):
                 yield streamer_pb2.StreamerResponse(bytes=content)
 
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+async def serve():
+    # server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.aio.server()
     streamer_pb2_grpc.add_StreamerServicer_to_server(Streamer(), server)
-    server.add_insecure_port('[::]:50051')
-    server.start()
-    server.wait_for_termination()
+    listen_addr = '[::]:50051'
+    server.add_insecure_port(listen_addr)
+    LOGGER.info("Starting server on %s", listen_addr)
+    await server.start()
+    await server.wait_for_termination()
 
 
 if __name__ == '__main__':
-    serve()
+    asyncio.run(serve())
     

@@ -10,6 +10,7 @@ lxml = "*"
 numpy = "*"
 pandas = "*"
 pyarrow = "*"
+asyncio = "*"
 
 [dev-packages]
 
