@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+// option java_multiple_files = true;
+// option java_package = "io.grpc.examples.helloworld";
+// option java_outer_classname = "HelloWorldProto";
+// option objc_class_prefix = "HLW";
+
+package helloworld;
+
+// Define a service
+service Streamer {
+  rpc StreamDataFrame (StreamerRequest) returns (stream StreamerResponse) {}
+}
+
+message StreamerRequest {
+  int32 n = 1;
+  int32 m = 2;
+}
+
+message StreamerResponse {
+  bytes bytes = 1;
+}

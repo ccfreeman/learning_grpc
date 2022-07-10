@@ -7,6 +7,9 @@ name = "pypi"
 grpcio = "*"
 grpcio-tools = "*"
 lxml = "*"
+numpy = "*"
+pandas = "*"
+pyarrow = "*"
 
 [dev-packages]
 
