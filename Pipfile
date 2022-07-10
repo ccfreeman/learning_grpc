@@ -11,6 +11,8 @@ numpy = "*"
 pandas = "*"
 pyarrow = "*"
 asyncio = "*"
+jupyter = "*"
+notebook = "*"
 
 [dev-packages]
 

@@ -9,14 +9,19 @@ package helloworld;
 
 // Define a service
 service Streamer {
-  rpc StreamDataFrame (StreamerRequest) returns (stream StreamerResponse) {}
+  rpc StreamDataFrameOut (Dimensions) returns (stream StreamBlock) {}
+  rpc StreamDataFrameIn (stream StreamBlock) returns (Acknowledge) {} 
 }
 
-message StreamerRequest {
+message Dimensions {
   int32 n = 1;
   int32 m = 2;
 }
 
-message StreamerResponse {
+message StreamBlock {
   bytes bytes = 1;
+}
+
+message Acknowledge {
+  string message = 1;
 }

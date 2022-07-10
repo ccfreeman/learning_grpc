@@ -1,27 +1,18 @@
 import sys 
 import logging
 import asyncio
-from io import BytesIO
+
+import numpy as np
 import pandas as pd
 
 import grpc
+from src.helpers import stream_dataframe_in, stream_dataframe_out
 from src.protos import streamer_pb2 
 from src.protos import streamer_pb2_grpc
 from config import CONFIG
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-async def _stream_dataframe(stream: grpc.aio._call.UnaryStreamCall) -> pd.DataFrame:
-    with BytesIO() as buffer:
-        i = 1
-        async for bytes_chunk in stream:
-            LOGGER.info(i)
-            i += 1
-            buffer.write(bytes_chunk.bytes)
-        buffer.seek(0)
-        return pd.read_parquet(buffer)
 
 
 async def run():
@@ -35,9 +26,23 @@ async def run():
 
     async with grpc.aio.insecure_channel('localhost:50051') as channel:
         stub = streamer_pb2_grpc.StreamerStub(channel)
-        stream = stub.StreamDataFrame(streamer_pb2.StreamerRequest(n=n, m=m))
-        df = await _stream_dataframe(stream)
-    LOGGER.info(df)
+        
+        LOGGER.info("STREAMING DATAFRAME INTO CLIENT")
+        init_metadata = (('name', 'client'), )
+        stream = stub.StreamDataFrameOut(streamer_pb2.Dimensions(n=n, m=m), metadata=init_metadata)
+        df_in = await stream_dataframe_in(stream)
+        LOGGER.info("Received dataframe")
+        trailing_metadata = await stream.trailing_metadata()
+        LOGGER.info("Printing metadata")
+        for k, v in trailing_metadata:
+            LOGGER.info(f"{k}: {v}")
+
+        LOGGER.info("STREAMING DATA OUT OF CLIENT")
+        arr = np.random.randn(n, m)
+        df_out = pd.DataFrame(arr, columns=[str(i) for i in range(m)])
+        await stub.StreamDataFrameIn(stream_dataframe_out(df_out))
+        
+    LOGGER.info(df_in)
 
 
 if __name__ == '__main__':

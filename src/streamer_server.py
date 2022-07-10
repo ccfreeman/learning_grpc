@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import grpc
 
+from src.helpers import stream_dataframe_in, stream_dataframe_out
 from src.protos import streamer_pb2 
 from src.protos import streamer_pb2_grpc
 from config import CONFIG
@@ -18,12 +19,31 @@ class Streamer(streamer_pb2_grpc.StreamerServicer):
 
     chunk_size = 64 * 1024 # Recommended chunk size for gRPC is 16-64 KiB (https://github.com/grpc/grpc.github.io/issues/371)
 
-    async def StreamDataFrame(
-        self, request: streamer_pb2.StreamerRequest, context: grpc.ServicerContext
-    ) -> streamer_pb2.StreamerResponse:
+    async def StreamDataFrameIn(
+        self, request_iterator: streamer_pb2.StreamBlock, context: grpc.aio.ServicerContext
+    ) -> streamer_pb2.Acknowledge:
+        LOGGER.info("Received request to stream in")
+        df = await stream_dataframe_in(request_iterator)
+        LOGGER.info(df)
+        return streamer_pb2.Acknowledge(message='ok')
+
+
+    async def StreamDataFrameOut(
+        self, request: streamer_pb2.Dimensions, context: grpc.aio.ServicerContext
+    ) -> streamer_pb2.StreamBlock:
         LOGGER.info("Received request for stream")
+        init_metadata = context.invocation_metadata()
+        LOGGER.info("Printing metadata")
+        for k, v in init_metadata:
+            LOGGER.info(f"{k}: {v}")
+
+        context.set_trailing_metadata((
+            ('name', 'server'),
+        ))
+
         arr = np.random.randn(request.n, request.m)
         df = pd.DataFrame(arr, columns=[str(i) for i in range(request.m)])
+
         with BytesIO() as buffer:
             df.to_parquet(buffer)
             buffer.seek(0)
@@ -31,7 +51,7 @@ class Streamer(streamer_pb2_grpc.StreamerServicer):
                 content = buffer.read(self.chunk_size)
                 if not content:
                     break
-                yield streamer_pb2.StreamerResponse(bytes=content)
+                yield streamer_pb2.StreamBlock(bytes=content)
 
 
 async def serve():
