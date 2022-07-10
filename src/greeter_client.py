@@ -13,8 +13,6 @@
 # limitations under the License.
 """The Python implementation of the GRPC helloworld.Greeter client."""
 
-from __future__ import print_function
-
 import logging
 import asyncio
 
@@ -23,7 +21,9 @@ from src.protos import helloworld_pb2
 from src.protos import helloworld_pb2_grpc
 from config import CONFIG
 
+
 LOGGER = logging.getLogger(__name__)
+
 
 async def run():
     # NOTE(gRPC Python Team): .close() is possible on a channel and should be

@@ -32,7 +32,7 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
         self, request: helloworld_pb2.HelloRequest, context: grpc.ServicerContext
     ) -> helloworld_pb2.HelloReply:
         LOGGER.info("Received request for hello")
-        self.name = request.name
+        LOGGER.info(dir(request))
         return helloworld_pb2.HelloReply(message='Hello, %s!' % request.name)
 
 
