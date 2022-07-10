@@ -27,8 +27,11 @@ LOGGER = logging.getLogger(__name__)
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
 
-    def SayHello(self, request, context):
+    def SayHello(
+        self, request: helloworld_pb2.HelloRequest, context: grpc.ServicerContext
+    ) -> helloworld_pb2.HelloReply:
         LOGGER.info("Received request for hello")
+        self.name = request.name
         return helloworld_pb2.HelloReply(message='Hello, %s!' % request.name)
 
 
