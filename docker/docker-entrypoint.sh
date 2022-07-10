@@ -14,6 +14,6 @@ pipenv run pip freeze
 pipenv run python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. src/protos/*.proto
 
 # start the server
-pipenv run python -m src.greeter_server
+pipenv run python -m src.streamer_server
 
 exec sleep infinity
