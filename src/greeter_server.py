@@ -15,6 +15,7 @@
 
 from concurrent import futures
 import logging
+import asyncio
 
 import grpc
 from src.protos import helloworld_pb2 
@@ -27,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Greeter(helloworld_pb2_grpc.GreeterServicer):
 
-    def SayHello(
+    async def SayHello(
         self, request: helloworld_pb2.HelloRequest, context: grpc.ServicerContext
     ) -> helloworld_pb2.HelloReply:
         LOGGER.info("Received request for hello")
@@ -35,14 +36,17 @@ class Greeter(helloworld_pb2_grpc.GreeterServicer):
         return helloworld_pb2.HelloReply(message='Hello, %s!' % request.name)
 
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+async def serve():
+    # server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.aio.server()
     helloworld_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
-    server.add_insecure_port('[::]:50051')
-    server.start()
-    server.wait_for_termination()
+    listen_addr = '[::]:50051'
+    server.add_insecure_port(listen_addr)
+    LOGGER.info("Starting server on %s", listen_addr)
+    await server.start()
+    await server.wait_for_termination()
 
 
 if __name__ == '__main__':
-    serve()
+    asyncio.run(serve())
     

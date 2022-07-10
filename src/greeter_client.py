@@ -16,6 +16,7 @@
 from __future__ import print_function
 
 import logging
+import asyncio
 
 import grpc
 from src.protos import helloworld_pb2
@@ -24,15 +25,15 @@ from config import CONFIG
 
 LOGGER = logging.getLogger(__name__)
 
-def run():
+async def run():
     # NOTE(gRPC Python Team): .close() is possible on a channel and should be
     # used in circumstances in which the with statement does not fit the needs
     # of the code.
-    with grpc.insecure_channel('localhost:50051') as channel:
+    async with grpc.aio.insecure_channel('localhost:50051') as channel:
         stub = helloworld_pb2_grpc.GreeterStub(channel)
-        response = stub.SayHello(helloworld_pb2.HelloRequest(name='cole'))
+        response = await stub.SayHello(helloworld_pb2.HelloRequest(name='cole'))
     LOGGER.info("Greeter client received: " + response.message)
 
 
 if __name__ == '__main__':
-    run()
+    asyncio.run(run())
